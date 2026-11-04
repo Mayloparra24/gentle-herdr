@@ -1,0 +1,9 @@
+{
+  "name": "gentle-herdr",
+  "private": true,
+  "type": "module",
+  "description": "Herdr app layout and theme sync for Gentle Shell",
+  "scripts": {
+    "test": "node --test tests/theme/ tests/layout/"
+  }
+}
