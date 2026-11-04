@@ -15,10 +15,12 @@ Herdr app layout for the Gentle Shell community (Expanded Sidebar design) plus a
 
 ## Tasks
 
-- T1 (S2, S3, S6, S7): themes/gentle-shell.json + mod gentle-theme (pure derive logic with node tests). Route: writer 1. Commit: pending
-- T2 (S1, S2, S4, S6, S7): layouts/gentle-herdr.json from herdr `main` plus structure test and SVG preview. Route: writer 2. Commit: pending
-- T3 (S5): RECIPE.md, README, preview, `herdr-app check`. Route: inline. Commit: pending
+- T1 (S2, S3, S6, S7): themes/gentle-shell.json + mod gentle-theme (pure derive logic with node tests). Route: writer 1. Commit: 4cdadef [x]
+- T2 (S1, S2, S4, S6, S7): layouts/gentle-herdr.json from herdr `main` plus structure test and SVG preview. Route: writer 2. Commit: e1dac5e [x] (test converted to ESM in the next commit)
+- T3 (S5): RECIPE.md, README, preview, `herdr-app check`. Route: inline. Commit: docs commit after e1dac5e [x] (install and herdr check pending, needs consent)
 
 ## Log
 
 - L1: "Por ahora me gusta el mod de gentle-theme, además del layout Expanded Sidebar para implementarlo de una vez en este repositorio, luego vamos incluyendo más mods"
+- L2: "ah bueno lo de design/ y .agents me lo pones en el .gitignore porfa" and "skill-lock.json agregalo al .gitignore": done in .gitignore.
+- L3: "la idea es si yo desde gentle-shell cambio el tema, que herdr app o gentle-herdr sincronice los colores": implemented by the gentle-theme mod; live reload by herdr is unverified.
