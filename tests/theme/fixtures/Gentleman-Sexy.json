@@ -1,0 +1,32 @@
+{
+  "name": "Gentleman-Sexy",
+  "vars": {
+    "bg": "#060407",
+    "bgPanel": "#100A0F",
+    "bgElement": "#100A0F",
+    "bgSubtle": "#100A0F",
+    "userMessageBg": "#2E0F1F",
+    "border": "#563040",
+    "borderSubtle": "#2A1720",
+    "text": "#F6EFF3",
+    "muted": "#A78E9B",
+    "dim": "#76616B",
+    "accent": "#F43888",
+    "activePink": "#FF4F9A",
+    "pearl": "#D2CBD0",
+    "error": "#FF718F",
+    "warning": "#F2B86D",
+    "selection": "#28121E"
+  },
+  "colors": {
+    "accent": "accent",
+    "border": "border",
+    "error": "error",
+    "success": "pearl",
+    "warning": "warning",
+    "muted": "muted",
+    "dim": "dim",
+    "text": "text",
+    "selectedBg": "selection"
+  }
+}
