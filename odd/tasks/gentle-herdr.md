@@ -24,3 +24,4 @@ Herdr app layout for the Gentle Shell community (Expanded Sidebar design) plus a
 - L1: "Por ahora me gusta el mod de gentle-theme, además del layout Expanded Sidebar para implementarlo de una vez en este repositorio, luego vamos incluyendo más mods"
 - L2: "ah bueno lo de design/ y .agents me lo pones en el .gitignore porfa" and "skill-lock.json agregalo al .gitignore": done in .gitignore.
 - L3: "la idea es si yo desde gentle-shell cambio el tema, que herdr app o gentle-herdr sincronice los colores": implemented by the gentle-theme mod; live reload by herdr is unverified.
+- L4: "autorizo" (install into ~/.config/herdr-app, run herdr-app check and switch layout). Result: check passed, layout gentle-herdr active with no errors, theme row shows "Gentleman-Sexy synced", a manual accent edit was applied live and reverted by the mod. Not exercised: changing the theme inside Gentle Shell (would edit the user settings).

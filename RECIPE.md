@@ -34,7 +34,7 @@ Colors come from the `gentle-shell` theme. Shipped values: base `#1a1218`, termi
 ## Watch out
 
 - The mod **reads files outside its folder** (`~/.gentle-shell/agent/settings.json`, and the Pi theme file under `~/.gentle-shell/agent/themes`, `~/.pi/agent/themes` or `gentle-pi/themes`) and **writes `themes/gentle-shell.json`** in the herdr home. It runs no programs and uses no network.
-- Not yet confirmed with herdr: that it accepts root `theme` and `preview` in this layout, that `home()` returns a path that joins with `/` on Windows, and that herdr applies a rewritten theme file live. If it does not, applying the theme with `app.theme` is the fallback.
+- Confirmed on herdr-app 0.1.12 (Windows): the layout loads with no errors, `herdr-app check mods/gentle-theme` passes, `home()` resolves the Gentle Shell and Pi paths, and herdr applies a rewritten `themes/gentle-shell.json` live (an edited accent was shown within a second and reverted by the mod within three).
 - The derived colors follow the Gentle Shell theme, so they differ from the shipped palette. With `Gentleman-Sexy` the accent is `#F43888`.
 - `ansi0`, `accent_foreground`, `solid_foreground` and `unknown` always keep the shipped values.
 - `themes/gentle-shell.json` is overwritten by the mod; edits made by hand are lost.

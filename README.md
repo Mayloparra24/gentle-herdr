@@ -2,7 +2,7 @@
 
 A [herdr](https://herdr.dev) app layout for the [Gentle Shell](https://gentlemanprogramming.com/gentle-shell/) community. It keeps herdr's own window and wears the Gentleman Programming palette. A small mod keeps herdr's colors in step with the theme you choose in Gentle Shell.
 
-Status: work in progress. The layout and mod have structural tests but have not been loaded by herdr yet.
+Status: work in progress. Tested on herdr-app 0.1.12 on Windows: the layout loads, the mod passes `herdr-app check`, and a changed theme file is applied live. Switching the theme from inside Gentle Shell has not been exercised end to end yet.
 
 ## What is inside
 
