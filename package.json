@@ -4,6 +4,6 @@
   "type": "module",
   "description": "Herdr app layout and theme sync for Gentle Shell",
   "scripts": {
-    "test": "node --test tests/theme/ tests/layout/"
+    "test": "node --test tests/theme/ tests/layout/ tests/programs/"
   }
 }
