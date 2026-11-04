@@ -1,7 +1,10 @@
-const test = require('node:test');
-const assert = require('node:assert');
-const fs = require('node:fs');
-const path = require('node:path');
+import test from 'node:test';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const root = path.join(__dirname, '..', '..');
 const layoutPath = path.join(root, 'layouts', 'gentle-herdr.json');
