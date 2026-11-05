@@ -71,6 +71,8 @@ export default class GentleEditor extends View {
     this.justSaved = false;
     this.error = null;
     this.locked = null; // why this file can only be viewed
+    this.token = Math.random().toString(36).slice(2, 8); // unique per view: a view re-created for the same file must not reuse the name a closing one is about to delete
+    this.light = false; // image backdrop
     this.handle = cx.focus_handle();
     this.load(cx, true);
     sweepCache();
@@ -111,7 +113,7 @@ export default class GentleEditor extends View {
   // One live copy per tab: a reload's new copy replaces the previous one, and closing the tab deletes it.
   loadImage(cx) {
     if (this.on) return;
-    const version = ++this.version, name = cacheName(this.full, this.ext, version), dir = cacheDir(), dest = `${dir}/${name}`;
+    const version = ++this.version, name = cacheName(this.full, this.ext, `${this.token}-${version}`), dir = cacheDir(), dest = `${dir}/${name}`;
     cx.spawn(async cx => {
       try {
         // The copy keeps the source's modification time, so it is touched: the orphan sweep goes by age.
@@ -194,7 +196,7 @@ export default class GentleEditor extends View {
   get showImage() { return this.raster || (isImage(this.ext) && this.mode === "view" && !this.on); }
 
   imageBody(t) {
-    const box = div().flex_1().min_h(0).flex().items_center().justify_center().bg(t.raised).p(16);
+    const box = div().flex_1().min_h(0).flex().items_center().justify_center().bg(this.light ? "#f3f0f5" : t.raised).p(16);
     if (this.on) return box.child(div().text_color(t.dim).child("Image preview is not available for remote files"));
     if (this.imageError) return box.child(div().text_color(t.dim).child("Cannot preview this image"));
     if (!this.imagePath) return box.child(div().text_color(t.dim).child("Loading file…"));
@@ -233,6 +235,7 @@ export default class GentleEditor extends View {
       .child(this.showImage ? this.imageBody(t) : this.code ? Editor.new(this.code).flex_1().min_h(0) : div().p(12).text_color(t.dim).child(this.error || "Loading file…"))
       .child(h_flex().h(26).flex_none().px(14).gap(14).items_center().border_t(1).border_color(t.border).text_size(12).text_color(t.dim)
         .child(div().child(this.raster ? "Image" : this.locked ?? (this.mode === "edit" ? "Editing" : "View")))
+        .when(this.showImage, el => el.child(div().id("backdrop").cursor_pointer().text_color(t.muted).hover(s => s.text_color(t.foreground)).on_click((_e, cx) => { this.light = !this.light; cx.notify(); }).child(this.light ? "Backdrop: light" : "Backdrop: dark")))
         .when(this.raster, el => el.child(div().child(this.ext.toUpperCase())).when(Number.isFinite(this.imageSize), el => el.child(div().child(formatSize(this.imageSize)))))
         .child(div().flex_1().text_right().child(this.showImage && this.dirty ? "Preview shows the saved file" : this.dirty ? "Unsaved changes" : this.justSaved ? "Saved" : "")));
   }
