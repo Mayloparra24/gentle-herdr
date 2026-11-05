@@ -8,6 +8,10 @@ import { isRaster, isImage, cacheName, formatSize } from "./image.js";
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const LIMIT = 1048576; // readTextFile reads at most 1 MiB; a longer file would be saved truncated
 
+// -Command does not pass trailing arguments to a script block, so paths go inside the command as quoted literals
+// (PowerShell reads curly single quotes as quotes too, so they are doubled like '). Paths here contain spaces.
+const psQuote = p => "'" + p.replace(/['‘’‚‛]/g, m => m + m) + "'";
+
 export default class GentleEditor extends View {
   // Setting dirty also renames the tab ("● name" while unsaved), so every path that changes it keeps the tab in step.
   get dirty() { return this._dirty; }
@@ -76,7 +80,7 @@ export default class GentleEditor extends View {
     cx.spawn(async cx => {
       try {
         const r = window()?.platform === "windows"
-          ? await exec("powershell", ["-NoProfile", "-Command", "& { param($s, $d, $f) New-Item -ItemType Directory -Force -Path $d | Out-Null; Copy-Item -LiteralPath $s -Destination $f -Force -ErrorAction Stop; (Get-Item -LiteralPath $f).Length }", this.full, dir, dest])
+          ? await exec("powershell", ["-NoProfile", "-Command", "& { param($s, $d, $f) New-Item -ItemType Directory -Force -Path $d | Out-Null; Copy-Item -LiteralPath $s -Destination $f -Force -ErrorAction Stop; (Get-Item -LiteralPath $f).Length } " + [this.full, dir, dest].map(psQuote).join(" ")])
           : await exec("sh", ["-c", 'mkdir -p "$2" && cp "$1" "$3" && wc -c < "$3"', "image", this.full, dir, dest]);
         if (r.code !== 0) throw new Error(r.stderr);
         if (version !== this.version) return;
