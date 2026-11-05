@@ -2,7 +2,8 @@
 // Opened by gentle-files with tab.new { mod: "gentle-editor", props: { root, path, on } }.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, Editor, EditorState } from "gpui-base";
-import { props, readTextFile, writeTextFile, theme, settings, exec, run, spaces, panes } from "herdr";
+import { props, readTextFile, writeTextFile, theme, settings, exec, run, spaces, panes, window } from "herdr";
+import { isSaveKey, saveHint } from "./keys.js";
 
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const LIMIT = 1048576; // readTextFile reads at most 1 MiB; a longer file would be saved truncated
@@ -130,12 +131,12 @@ export default class GentleEditor extends View {
     const saveLabel = h_flex().gap(7).items_center()
       .child(svg("mods/gentle-editor/save.svg").size(14).flex_none())
       .child(div().child("Save"))
-      .child(div().h(16).px(5).flex().items_center().rounded(4).border_1().border_color(t.accent_foreground).opacity(0.75).text_size(10).child("Ctrl S"));
+      .child(div().h(16).px(5).flex().items_center().rounded(4).border_1().border_color(t.accent_foreground).opacity(0.75).text_size(10).child(saveHint(window()?.platform)));
     const letter = this.git ?? (this.dirty ? "M" : null), dir = this.path.includes("/") ? this.path.slice(0, this.path.lastIndexOf("/")) : "";
     const canSave = this.dirty && this.mode === "edit" && !this.locked;
     return v_flex().id("gentle-editor").size_full().min_h(0).overflow_hidden().bg(t.background)
       .text_color(t.foreground).text_size(13).track_focus(this.handle)
-      .on_key_down((e, cx) => { if (e.keystroke === "cmd-s") { cx.stop_propagation(); this.save(cx); } })
+      .on_key_down((e, cx) => { if (isSaveKey(e, window()?.platform)) { cx.stop_propagation(); this.save(cx); } })
       .child(h_flex().h(40).flex_none().px(14).gap(10).items_center().border_b(1).border_color(t.border)
         .child(div().font_semibold().child(this.name))
         .when(Boolean(letter), el => el.child(div().text_size(11).text_color(letter === "A" ? t.ansi2 : letter === "D" || letter === "U" ? t.ansi1 : t.blocked).child(letter)))
