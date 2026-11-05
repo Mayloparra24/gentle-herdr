@@ -25,3 +25,12 @@ export function formatSize(bytes) {
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KiB`;
   return `${(bytes / 1048576).toFixed(1)} MiB`;
 }
+
+// True only for a file directly inside the cache dir (no subdirectories, no "..", not the dir itself).
+// Guards every delete: only the exact copy a tab created may be removed.
+export function isCacheFile(dir, file) {
+  const d = String(dir).replaceAll("\\", "/").replace(/\/+$/, ""), f = String(file).replaceAll("\\", "/");
+  if (!d || !f.startsWith(`${d}/`)) return false;
+  const rest = f.slice(d.length + 1);
+  return rest !== "" && rest !== ".." && !rest.includes("/");
+}

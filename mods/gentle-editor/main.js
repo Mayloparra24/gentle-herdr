@@ -3,7 +3,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, Editor, EditorState } from "gpui-base";
 import { props, readTextFile, writeTextFile, theme, settings, exec, run, spaces, panes, appHome, window } from "herdr";
-import { isRaster, isImage, cacheName, formatSize } from "./image.js";
+import { isRaster, isImage, cacheName, formatSize, isCacheFile } from "./image.js";
 
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const LIMIT = 1048576; // readTextFile reads at most 1 MiB; a longer file would be saved truncated
@@ -11,6 +11,30 @@ const LIMIT = 1048576; // readTextFile reads at most 1 MiB; a longer file would 
 // -Command does not pass trailing arguments to a script block, so paths go inside the command as quoted literals
 // (PowerShell reads curly single quotes as quotes too, so they are doubled like '). Paths here contain spaces.
 const psQuote = p => "'" + p.replace(/['‘’‚‛]/g, m => m + m) + "'";
+
+const cacheDir = () => `${appHome()}/cache/gentle-editor`;
+const isWindows = () => window()?.platform === "windows";
+
+// Deletes one cache copy. Refuses anything that is not a file directly inside the cache dir; never a glob or a recursive delete.
+async function removeCopy(file) {
+  if (!file || !isCacheFile(cacheDir(), file)) return;
+  try {
+    if (isWindows()) await exec("powershell", ["-NoProfile", "-Command", `Remove-Item -LiteralPath ${psQuote(file)} -Force -ErrorAction SilentlyContinue`]);
+    else await exec("sh", ["-c", 'rm -f -- "$1"', "rm", file]);
+  } catch { /* best effort: the next app start sweeps leftovers */ }
+}
+
+// Once per app session: drops cache files older than a day (left by crashes or old versions). That directory only, files only.
+let swept = false;
+async function sweepCache() {
+  if (swept) return;
+  swept = true;
+  const dir = cacheDir();
+  try {
+    if (isWindows()) await exec("powershell", ["-NoProfile", "-Command", `Get-ChildItem -LiteralPath ${psQuote(dir)} -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt (Get-Date).AddDays(-1) | Remove-Item -Force -ErrorAction SilentlyContinue`]);
+    else await exec("sh", ["-c", 'find "$1" -type f -mtime +0 -delete 2>/dev/null; true', "sweep", dir]);
+  } catch { /* best effort */ }
+}
 
 export default class GentleEditor extends View {
   // Setting dirty also renames the tab ("● name" while unsaved), so every path that changes it keeps the tab in step.
@@ -35,6 +59,8 @@ export default class GentleEditor extends View {
     this.imageSize = null;
     this.imageError = false;
     this.version = 0;
+    this.copy = null; // absolute path of this tab's live cache copy: it owns it and deletes it
+    this.closed = false;
     this.saved = null; // text as last read or written: the guard for writeTextFile
     this._dirty = false;
     // Its own tab: the active tab of the active space that holds a gentle-editor pane (null if not found).
@@ -47,6 +73,14 @@ export default class GentleEditor extends View {
     this.locked = null; // why this file can only be viewed
     this.handle = cx.focus_handle();
     this.load(cx, true);
+    sweepCache();
+  }
+
+  // Tab closed: delete this tab's own cache copy (and any copy still being made).
+  async close(_cx) {
+    this.closed = true;
+    await removeCopy(this.copy);
+    this.copy = null;
   }
 
   // Same letters as the Files tree; a failed or empty status (clean file, not a repo) clears the letter.
@@ -74,16 +108,21 @@ export default class GentleEditor extends View {
   // image() only loads from the app directory: its docs say the path "resolves against the application root",
   // not an absolute or arbitrary path (gpui-kit.d.ts, `image`). So the file is copied into
   // <appHome>/cache/gentle-editor/ and shown by its app-relative path. Local files only.
+  // One live copy per tab: a reload's new copy replaces the previous one, and closing the tab deletes it.
   loadImage(cx) {
     if (this.on) return;
-    const version = ++this.version, name = cacheName(this.full, this.ext, version), dir = `${appHome()}/cache/gentle-editor`, dest = `${dir}/${name}`;
+    const version = ++this.version, name = cacheName(this.full, this.ext, version), dir = cacheDir(), dest = `${dir}/${name}`;
     cx.spawn(async cx => {
       try {
-        const r = window()?.platform === "windows"
-          ? await exec("powershell", ["-NoProfile", "-Command", "& { param($s, $d, $f) New-Item -ItemType Directory -Force -Path $d | Out-Null; Copy-Item -LiteralPath $s -Destination $f -Force -ErrorAction Stop; (Get-Item -LiteralPath $f).Length } " + [this.full, dir, dest].map(psQuote).join(" ")])
-          : await exec("sh", ["-c", 'mkdir -p "$2" && cp "$1" "$3" && wc -c < "$3"', "image", this.full, dir, dest]);
+        // The copy keeps the source's modification time, so it is touched: the orphan sweep goes by age.
+        const r = isWindows()
+          ? await exec("powershell", ["-NoProfile", "-Command", "& { param($s, $d, $f) New-Item -ItemType Directory -Force -Path $d | Out-Null; Copy-Item -LiteralPath $s -Destination $f -Force -ErrorAction Stop; $i = Get-Item -LiteralPath $f; $i.LastWriteTime = Get-Date; $i.Length } " + [this.full, dir, dest].map(psQuote).join(" ")])
+          : await exec("sh", ["-c", 'mkdir -p "$2" && cp "$1" "$3" && touch "$3" && wc -c < "$3"', "image", this.full, dir, dest]);
         if (r.code !== 0) throw new Error(r.stderr);
-        if (version !== this.version) return;
+        if (version !== this.version || this.closed) { await removeCopy(dest); return; } // superseded or closed while copying
+        const previous = this.copy;
+        this.copy = dest;
+        if (previous && previous !== dest) await removeCopy(previous);
         this.imagePath = `cache/gentle-editor/${name}`;
         this.imageSize = Number.parseInt(r.stdout.trim(), 10);
         this.imageError = false;
