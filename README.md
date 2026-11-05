@@ -20,7 +20,7 @@ Status: work in progress. Tested on herdr-app 0.1.12 on Windows: the layout load
 ## Requirements
 
 - **herdr app** (`herdr-app`), installed.
-- **Gentle Shell**, installed from the web installer or the packaged version. The theme sync reads its settings, so without it the layout still loads but the theme row shows `waiting` and herdr keeps the default Gentle palette.
+- **Gentle Shell**, installed from the web installer (the packaged version) or as the Pi extension. The theme sync reads its settings, so without it the layout still loads but the theme row shows `waiting` and herdr keeps the default Gentle palette.
 
 ## Install
 

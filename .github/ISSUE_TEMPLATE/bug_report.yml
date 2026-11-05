@@ -31,9 +31,8 @@ body:
     attributes:
       label: How is Gentle Shell installed?
       options:
-        - Web installer
+        - Web installer (packaged version)
         - Pi extension
-        - Packaged version
         - Not installed
     validations:
       required: true
