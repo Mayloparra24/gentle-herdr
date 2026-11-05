@@ -10,7 +10,7 @@ The same window as herdr's default layout, with no system title bar:
 
 1. **The sidebar**, 268px, `chrome` color: the brand row, then Spaces and Agents lists, then a 30px **theme row**, then Settings and Add machine.
 2. **The brand row**: a 24px circle with a pink `✿`, the text "Gentle Herdr", then search and the sidebar toggle.
-3. **The theme row**, 30px: a pink `✿`, "Theme", the active Gentle Shell theme name, and a state on the right: `synced`, `synced (built-in)`, `waiting` or `error: <reason>`.
+3. **The theme row**, 30px: a pink `✿`, "Theme", the active Gentle Shell theme name, and a state on the right: `synced`, `synced (built-in)`, `waiting` or `error: <reason>`. When the sidebar is the narrow rail (under 160px, like `workspace-chrome` decides) only the flower is shown, in the accent color when synced, muted when waiting and in the blocked color on error.
 4. **The tab bar**, 42px, over the work area. On the right, left to right: a **right-panel toggle** (herdr's `panel-right` icon, shown pressed while the panel is open), the new-tab `+`, then the Files and Changes buttons.
 5. **The pane**, one rounded terminal frame (radius 10) with a pink focus border (`accent`). The Gentle Shell agent shows a flower, not the generic robot, in the Agents list, the tab pill and the pane header.
 6. **The right panel**, hidden until opened: Files and Changes, 368px.

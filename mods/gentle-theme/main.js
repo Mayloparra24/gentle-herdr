@@ -9,7 +9,8 @@
 // theme), and the output is compared in memory with what was last written, never re-read per cycle.
 import { View, div } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { home, appHome, readTextFile, writeTextFile, theme } from "herdr";
+import { home, appHome, readTextFile, writeTextFile, theme, layout } from "herdr";
+import { isNarrow } from "./rail.js";
 import { derive, resolveTheme, BASE } from "./derive.js";
 import { BUILTIN } from "./builtin.js";
 
@@ -107,6 +108,12 @@ export default class GentleTheme extends View {
     const label = this.state === "error" || (this.state === "waiting" && this.reason)
       ? `${this.state}: ${this.reason}`
       : this.builtin ? "synced (built-in)" : this.state;
+    // On the narrow rail only the flower fits: it takes the state's color (accent when synced).
+    if (isNarrow(layout())) {
+      const dot = { synced: t.accent, waiting: t.muted, error: t.blocked }[this.state];
+      return h_flex().size_full().h(30).items_center().justify_center().bg(t.chrome).text_size(13)
+        .child(div().flex_none().text_color(dot).child("✿"));
+    }
     return h_flex().size_full().h(30).px(14).gap(8).items_center().bg(t.chrome).text_size(11.8)
       .child(div().flex_none().text_color(t.accent).child("✿"))
       .child(div().flex_none().text_color(t.muted).child("Theme"))
