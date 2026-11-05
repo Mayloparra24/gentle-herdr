@@ -3,18 +3,19 @@ import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { spaces, panes, focused, exec, watchFolder, theme, settings, window, run } from "herdr";
 
-// Last location seen with a terminal focused. A mod pane (an editor tab, this panel) or no focus keeps it,
-// so opening a file does not reset the panel; the key also ignores slash style and trailing slashes.
-let last = null;
+// Last location seen with a terminal focused, per space. A mod pane (an editor tab, this panel) or no focus keeps
+// that space's own location (its folder when it has none yet), so opening a file does not reset the panel and
+// switching spaces never shows another space's files; the key also ignores slash style and trailing slashes.
+const lastBySpace = new Map(); // space id -> last location seen there with a terminal focused
 const clean = p => { const s = p?.replaceAll("\\", "/"); return s && s.length > 1 && !/^[A-Za-z]:\/$/.test(s) ? s.replace(/\/+$/, "") || "/" : s; };
 function location() {
   const space = spaces().find(s => s.active), f = focused();
   const pane = f?.pane ? panes().find(p => p.pane === f.pane) : null;
   const modFocus = !f || pane?.terminal === null || (f.pane === null && f.terminal === null);
-  if (modFocus && last && last.space === space?.id) return last.location;
+  if (modFocus) return lastBySpace.get(space?.id) ?? { cwd: clean(space?.folder), on: space?.machine ?? null, space: space?.id };
   const on = f?.pane === null ? (f.terminal?.includes("/") ? f.terminal.split("/")[0] : null) : space?.machine ?? null;
   const location = { cwd: clean(pane?.cwd || f?.cwd || space?.folder), on, space: space?.id };
-  if (location.cwd) last = { space: space?.id, location };
+  if (location.cwd) lastBySpace.set(space?.id, location);
   return location;
 }
 const key = () => JSON.stringify(location());
