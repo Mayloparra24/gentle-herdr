@@ -4,6 +4,8 @@ A [herdr](https://herdr.dev) app layout for the [Gentle Shell](https://gentleman
 
 Status: work in progress. Tested on herdr-app 0.1.12 on Windows: the layout loads, the six mods pass `herdr-app check`, and switching the Gentle Shell theme (including `light` and `dark`) is reflected in herdr within about a second.
 
+Not yet tested: macOS and Linux, and remote machines. The Files panel and the editor tab (`gentle-files`, `gentle-editor`) have only been exercised on a local Windows machine; files on a remote machine are meant to open view-only but that path has not been tried.
+
 ## What is inside
 
 | Path | What it is |
