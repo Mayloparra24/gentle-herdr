@@ -32,7 +32,7 @@ Not yet tested: macOS and Linux, and remote machines. The Files panel and the ed
 Ask your herdr agent
 
 ```
-Read ~/.config/herdr-app/AGENTS.md, then add this layout: <repository URL>
+Read ~/.config/herdr-app/AGENTS.md, then add this layout: https://github.com/Mayloparra24/gentle-herdr
 ```
 
 The agent copies `layouts/gentle-herdr.json` to `~/.config/herdr-app/layouts/`, the folders in `mods/` to `mods/` and `themes/gentle-shell.json` to `themes/`, merges `programs.json` into yours, checks the mods and switches the layout. Your own layout stays; `ctrl-shift-l` switches back.
@@ -45,7 +45,7 @@ The `gentle-theme` mod reads `~/.gentle-shell/agent/settings.json` (or `~/.pi/ag
 npm test
 ```
 
-Runs the theme derivation tests and the layout structure tests with `node --test`.
+Runs the theme derivation, layout structure, programs and editor key tests with `node --test`.
 
 ## License
 
