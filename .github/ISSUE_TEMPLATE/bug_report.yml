@@ -1,0 +1,49 @@
+name: Bug report
+description: Something in the layout or a mod does not work
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not paste screenshots or logs that show private paths or project names.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11, macOS 15, Ubuntu 24.04
+    validations:
+      required: true
+  - type: input
+    id: herdr
+    attributes:
+      label: herdr-app version
+      description: Output of `herdr-app --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: gentle-shell
+    attributes:
+      label: Is Gentle Shell installed?
+      options:
+        - Yes, from the web installer
+        - Yes, the packaged version
+        - No
+    validations:
+      required: true
+  - type: input
+    id: theme-row
+    attributes:
+      label: What the theme row shows
+      description: "`synced`, `synced (built-in)`, `waiting` or `error: ...`"
+  - type: textarea
+    id: check
+    attributes:
+      label: Output of `herdr-app check`
+      description: Run it on the mod that fails, for example `herdr-app check ~/.config/herdr-app/mods/gentle-theme`.
+      render: shell
