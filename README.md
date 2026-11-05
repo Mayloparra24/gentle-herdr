@@ -42,6 +42,10 @@ npm test
 
 Runs the theme derivation tests and the layout structure tests with `node --test`.
 
+## License
+
+Apache-2.0, see `LICENSE`. `mods/gentle-chrome/` and `mods/gentle-tabs/` are modified copies of herdr mods (also Apache-2.0); see `NOTICE`. Security notes: `SECURITY.md`.
+
 ## Publishing
 
 Herdr's gallery lists public repositories with the topic `herdr-layout`. `preview.png` (captured with `herdr-app shot`) is in the repository root; add the topic when publishing.
