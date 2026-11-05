@@ -17,9 +17,14 @@ Status: work in progress. Tested on herdr-app 0.1.12 on Windows: the layout load
 | `programs.json` | Gives the Gentle Shell agent a flower icon; merge it into your own `programs.json` |
 | `RECIPE.md` | The brief herdr's gallery expects: what it looks like and how it is built |
 
+## Requirements
+
+- **herdr app** (`herdr-app`), installed.
+- **Gentle Shell**, installed from the web installer or the packaged version. The theme sync reads its settings, so without it the layout still loads but the theme row shows `waiting` and herdr keeps the default Gentle palette.
+
 ## Install
 
-Planned: ask your herdr agent
+Ask your herdr agent
 
 ```
 Read ~/.config/herdr-app/AGENTS.md, then add this layout: <repository URL>
