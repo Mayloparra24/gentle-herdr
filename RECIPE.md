@@ -46,7 +46,7 @@ Colors come from the `gentle-shell` theme. Shipped values (used until the mod sy
 - `ansi0`, `accent_foreground` and `solid_foreground` keep shipped values on dark themes and are computed on light ones.
 - The embedded `dark` and `light` are copies of Pi 1.4.0 and drift if a later Pi changes them.
 - `themes/gentle-shell.json` is overwritten by the mod; edits made by hand are lost.
-- `preview.png` is not included yet; it has to be captured with `herdr-app shot` from a window without private content.
+- `preview.png` is captured with `herdr-app shot` from a window without private content.
 
 ## Done when
 

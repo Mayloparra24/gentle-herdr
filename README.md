@@ -39,4 +39,4 @@ Runs the theme derivation tests and the layout structure tests with `node --test
 
 ## Publishing
 
-Not done yet. Herdr's gallery lists public repositories with the topic `herdr-layout`; add `preview.png` (captured with `herdr-app shot`) before publishing.
+Herdr's gallery lists public repositories with the topic `herdr-layout`. `preview.png` (captured with `herdr-app shot`) is in the repository root; add the topic when publishing.
