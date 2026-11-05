@@ -45,6 +45,9 @@ export default class GentleTheme extends View {
   }
 
   async load(h, name) {
+    // Pi's `system` theme has no file: it follows the terminal's own colors, so herdr keeps the
+    // shipped Gentle palette instead of showing a "theme file not found" error.
+    if (name === "system") return { result: { name, builtin: false }, next: JSON.stringify(BASE, null, 2) + "\n" };
     const files = [
       `${h}/.gentle-shell/agent/themes/${name}.json`,
       `${h}/.pi/agent/themes/${name}.json`,
