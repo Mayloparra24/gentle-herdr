@@ -1,40 +1,11 @@
 // A file as a tab: View (read-only) and Edit modes, Save with a stale-write guard.
 // Opened by gentle-files with tab.new { mod: "gentle-editor", props: { root, path, on } }.
-import { View, div, svg, image } from "gpui-kit";
+import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, Editor, EditorState } from "gpui-base";
-import { props, readTextFile, writeTextFile, theme, settings, exec, run, spaces, panes, appHome, window } from "herdr";
-import { isRaster, isImage, cacheName, formatSize, isCacheFile } from "./image.js";
+import { props, readTextFile, writeTextFile, theme, settings, exec, run, spaces, panes } from "herdr";
 
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const LIMIT = 1048576; // readTextFile reads at most 1 MiB; a longer file would be saved truncated
-
-// -Command does not pass trailing arguments to a script block, so paths go inside the command as quoted literals
-// (PowerShell reads curly single quotes as quotes too, so they are doubled like '). Paths here contain spaces.
-const psQuote = p => "'" + p.replace(/['‘’‚‛]/g, m => m + m) + "'";
-
-const cacheDir = () => `${appHome()}/cache/gentle-editor`;
-const isWindows = () => window()?.platform === "windows";
-
-// Deletes one cache copy. Refuses anything that is not a file directly inside the cache dir; never a glob or a recursive delete.
-async function removeCopy(file) {
-  if (!file || !isCacheFile(cacheDir(), file)) return;
-  try {
-    if (isWindows()) await exec("powershell", ["-NoProfile", "-Command", `Remove-Item -LiteralPath ${psQuote(file)} -Force -ErrorAction SilentlyContinue`]);
-    else await exec("sh", ["-c", 'rm -f -- "$1"', "rm", file]);
-  } catch { /* best effort: the next app start sweeps leftovers */ }
-}
-
-// Once per app session: drops cache files older than a day (left by crashes or old versions). That directory only, files only.
-let swept = false;
-async function sweepCache() {
-  if (swept) return;
-  swept = true;
-  const dir = cacheDir();
-  try {
-    if (isWindows()) await exec("powershell", ["-NoProfile", "-Command", `Get-ChildItem -LiteralPath ${psQuote(dir)} -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt (Get-Date).AddDays(-1) | Remove-Item -Force -ErrorAction SilentlyContinue`]);
-    else await exec("sh", ["-c", 'find "$1" -type f -mtime +0 -delete 2>/dev/null; true', "sweep", dir]);
-  } catch { /* best effort */ }
-}
 
 export default class GentleEditor extends View {
   // Setting dirty also renames the tab ("● name" while unsaved), so every path that changes it keeps the tab in step.
@@ -54,13 +25,6 @@ export default class GentleEditor extends View {
     this.name = p.path.split("/").pop();
     this.ext = this.name.includes(".") ? this.name.split(".").pop() : "txt";
     this.mode = "view";
-    this.raster = isRaster(this.ext); // raster images have no text, so no Edit mode
-    this.imagePath = null; // cache copy, relative to the app dir (see loadImage)
-    this.imageSize = null;
-    this.imageError = false;
-    this.version = 0;
-    this.copy = null; // absolute path of this tab's live cache copy: it owns it and deletes it
-    this.closed = false;
     this.saved = null; // text as last read or written: the guard for writeTextFile
     this._dirty = false;
     // Its own tab: the active tab of the active space that holds a gentle-editor pane (null if not found).
@@ -71,18 +35,8 @@ export default class GentleEditor extends View {
     this.justSaved = false;
     this.error = null;
     this.locked = null; // why this file can only be viewed
-    this.token = Math.random().toString(36).slice(2, 8); // unique per view: a view re-created for the same file must not reuse the name a closing one is about to delete
-    this.light = false; // image backdrop
     this.handle = cx.focus_handle();
     this.load(cx, true);
-    sweepCache();
-  }
-
-  // Tab closed: delete this tab's own cache copy (and any copy still being made).
-  async close(_cx) {
-    this.closed = true;
-    await removeCopy(this.copy);
-    this.copy = null;
   }
 
   // Same letters as the Files tree; a failed or empty status (clean file, not a repo) clears the letter.
@@ -107,35 +61,7 @@ export default class GentleEditor extends View {
     return code;
   }
 
-  // image() only loads from the app directory: its docs say the path "resolves against the application root",
-  // not an absolute or arbitrary path (gpui-kit.d.ts, `image`). So the file is copied into
-  // <appHome>/cache/gentle-editor/ and shown by its app-relative path. Local files only.
-  // One live copy per tab: a reload's new copy replaces the previous one, and closing the tab deletes it.
-  loadImage(cx) {
-    if (this.on) return;
-    const version = ++this.version, name = cacheName(this.full, this.ext, `${this.token}-${version}`), dir = cacheDir(), dest = `${dir}/${name}`;
-    cx.spawn(async cx => {
-      try {
-        // The copy keeps the source's modification time, so it is touched: the orphan sweep goes by age.
-        const r = isWindows()
-          ? await exec("powershell", ["-NoProfile", "-Command", "& { param($s, $d, $f) New-Item -ItemType Directory -Force -Path $d | Out-Null; Copy-Item -LiteralPath $s -Destination $f -Force -ErrorAction Stop; $i = Get-Item -LiteralPath $f; $i.LastWriteTime = Get-Date; $i.Length } " + [this.full, dir, dest].map(psQuote).join(" ")])
-          : await exec("sh", ["-c", 'mkdir -p "$2" && cp "$1" "$3" && touch "$3" && wc -c < "$3"', "image", this.full, dir, dest]);
-        if (r.code !== 0) throw new Error(r.stderr);
-        if (version !== this.version || this.closed) { await removeCopy(dest); return; } // superseded or closed while copying
-        const previous = this.copy;
-        this.copy = dest;
-        if (previous && previous !== dest) await removeCopy(previous);
-        this.imagePath = `cache/gentle-editor/${name}`;
-        this.imageSize = Number.parseInt(r.stdout.trim(), 10);
-        this.imageError = false;
-      } catch { if (version === this.version) { this.imagePath = null; this.imageError = true; } }
-      finally { cx.notify(); }
-    });
-  }
-
   load(cx, first) {
-    if (isImage(this.ext)) this.loadImage(cx);
-    if (this.raster) return;
     cx.spawn(async cx => {
       try {
         const text = await readTextFile(this.full, { on: this.on });
@@ -154,7 +80,7 @@ export default class GentleEditor extends View {
   }
 
   setMode(mode, cx) {
-    if (this.raster || !this.code || this.locked || mode === this.mode) return;
+    if (!this.code || this.locked || mode === this.mode) return;
     const text = this.code.value();
     this.mode = mode;
     this.code.release();
@@ -192,18 +118,6 @@ export default class GentleEditor extends View {
     });
   }
 
-  // Raster images always show the picture; an SVG shows it in View mode and its source in Edit mode.
-  get showImage() { return this.raster || (isImage(this.ext) && this.mode === "view" && !this.on); }
-
-  imageBody(t) {
-    const box = div().flex_1().min_h(0).flex().items_center().justify_center().bg(this.light ? "#f3f0f5" : t.raised).p(16);
-    if (this.on) return box.child(div().text_color(t.dim).child("Image preview is not available for remote files"));
-    if (this.imageError) return box.child(div().text_color(t.dim).child("Cannot preview this image"));
-    if (!this.imagePath) return box.child(div().text_color(t.dim).child("Loading file…"));
-    // The API has no object-fit or natural-size query, so the image fills the padded box (host default keeps the aspect ratio).
-    return box.child(image(this.imagePath).size_full());
-  }
-
   render(cx) {
     const t = theme();
     const seg = (label, mode) => div().id(`mode-${mode}`).h(22).px(11).flex().items_center().rounded(6).cursor_pointer().text_size(12)
@@ -226,17 +140,15 @@ export default class GentleEditor extends View {
         .child(div().font_semibold().child(this.name))
         .when(Boolean(letter), el => el.child(div().text_size(11).text_color(letter === "A" ? t.ansi2 : letter === "D" || letter === "U" ? t.ansi1 : t.blocked).child(letter)))
         .child(div().flex_1().min_w(0).truncate().text_size(12).text_color(t.dim).child(dir))
-        .when(!this.raster, el => el.child(h_flex().gap(2).p(2).rounded(8).bg(t.raised).border_1().border_color(t.border).child(seg("View", "view")).child(seg("Edit", "edit"))))
+        .child(h_flex().gap(2).p(2).rounded(8).bg(t.raised).border_1().border_color(t.border).child(seg("View", "view")).child(seg("Edit", "edit")))
         .when(this.mode === "edit", el => el.child(button("save", saveLabel, true, cx => this.save(cx)).opacity(canSave ? 1 : 0.5))))
       .when(this.conflict, el => el.child(h_flex().mx(12).mt(10).px(12).py(8).gap(10).items_center().rounded(9).border_1().border_color(t.blocked).text_size(12.5).text_color(t.blocked)
         .child(div().flex_1().child("Changed on disk since you opened it."))
         .child(button("keep-mine", "Keep mine", false, cx => this.overwrite(cx)))
         .child(button("reload", "Reload", true, cx => this.load(cx)))))
-      .child(this.showImage ? this.imageBody(t) : this.code ? Editor.new(this.code).flex_1().min_h(0) : div().p(12).text_color(t.dim).child(this.error || "Loading file…"))
+      .child(this.code ? Editor.new(this.code).flex_1().min_h(0) : div().p(12).text_color(t.dim).child(this.error || "Loading file…"))
       .child(h_flex().h(26).flex_none().px(14).gap(14).items_center().border_t(1).border_color(t.border).text_size(12).text_color(t.dim)
-        .child(div().child(this.raster ? "Image" : this.locked ?? (this.mode === "edit" ? "Editing" : "View")))
-        .when(this.showImage, el => el.child(div().id("backdrop").cursor_pointer().text_color(t.muted).hover(s => s.text_color(t.foreground)).on_click((_e, cx) => { this.light = !this.light; cx.notify(); }).child(this.light ? "Backdrop: light" : "Backdrop: dark")))
-        .when(this.raster, el => el.child(div().child(this.ext.toUpperCase())).when(Number.isFinite(this.imageSize), el => el.child(div().child(formatSize(this.imageSize)))))
-        .child(div().flex_1().text_right().child(this.showImage && this.dirty ? "Preview shows the saved file" : this.dirty ? "Unsaved changes" : this.justSaved ? "Saved" : "")));
+        .child(div().child(this.locked ?? (this.mode === "edit" ? "Editing" : "View")))
+        .child(div().flex_1().text_right().child(this.dirty ? "Unsaved changes" : this.justSaved ? "Saved" : "")));
   }
 }
