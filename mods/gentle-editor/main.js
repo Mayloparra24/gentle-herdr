@@ -133,7 +133,7 @@ export default class GentleEditor extends View {
       .child(div().h(16).px(5).flex().items_center().rounded(4).border_1().border_color(t.accent_foreground).opacity(0.75).text_size(10).child("Ctrl S"));
     const letter = this.git ?? (this.dirty ? "M" : null), dir = this.path.includes("/") ? this.path.slice(0, this.path.lastIndexOf("/")) : "";
     const canSave = this.dirty && this.mode === "edit" && !this.locked;
-    return v_flex().id("gentle-editor").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.border)
+    return v_flex().id("gentle-editor").size_full().min_h(0).overflow_hidden().bg(t.background)
       .text_color(t.foreground).text_size(13).track_focus(this.handle)
       .on_key_down((e, cx) => { if (e.keystroke === "cmd-s") { cx.stop_propagation(); this.save(cx); } })
       .child(h_flex().h(40).flex_none().px(14).gap(10).items_center().border_b(1).border_color(t.border)
