@@ -45,7 +45,7 @@ test('node ids are unique', () => {
 test('every content.mod is shipped or a gentle mod', () => {
   const mods = walk(load()).map((n) => n.content && n.content.mod).filter(Boolean);
   assert.ok(mods.length > 0);
-  for (const m of mods) assert.ok([...SHIPPED_MODS, 'gentle-theme', 'gentle-chrome', 'gentle-tabs'].includes(m), m);
+  for (const m of mods) assert.ok([...SHIPPED_MODS, 'gentle-theme', 'gentle-chrome', 'gentle-tabs', 'gentle-files', 'gentle-changes'].includes(m), m);
 });
 
 test('theme and preview are set', () => {
