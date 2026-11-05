@@ -5,6 +5,6 @@
   "description": "Herdr app layout and theme sync for Gentle Shell",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "node --test tests/theme/ tests/layout/ tests/programs/"
+    "test": "node --test tests/theme/ tests/layout/ tests/programs/ tests/editor/"
   }
 }
