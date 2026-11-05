@@ -1,5 +1,5 @@
 // Keeps herdr's `gentle-shell` theme in step with the active Gentle Shell (Pi) theme, and shows
-// the sync state in a 30px row. It reads the theme name from settings.json, finds the Pi theme
+// the sync state in a 30px row. It reads the theme name from settings.json (settings.js), finds the Pi theme
 // (a file, or an embedded built-in such as `dark`/`light`), derives the herdr theme (derive.js) and
 // rewrites themes/gentle-shell.json only when the result changed.
 //
@@ -13,15 +13,12 @@ import { home, appHome, readTextFile, writeTextFile, theme, layout } from "herdr
 import { isNarrow } from "./rail.js";
 import { derive, resolveTheme, BASE } from "./derive.js";
 import { BUILTIN } from "./builtin.js";
+import { readSettings } from "./settings.js";
 
 const EVERY_MS = 500;
 const THEME_RECHECK_MS = 5000;
 const OUT = "gentle-shell";
 const SAFE_NAME = /^[\w .-]+$/;
-
-const parse = (text) => {
-  try { return JSON.parse(text); } catch { return undefined; }
-};
 
 export default class GentleTheme extends View {
   init(_props, cx) {
@@ -67,7 +64,7 @@ export default class GentleTheme extends View {
 
   async sync() {
     const h = home().replace(/[\/]+$/, "");
-    const settings = parse(await readTextFile(`${h}/.gentle-shell/agent/settings.json`));
+    const settings = await readSettings(h, readTextFile);
     if (settings === undefined) return { error: "settings.json missing or invalid" };
     const name = settings?.theme;
     if (typeof name !== "string" || !SAFE_NAME.test(name) || name.startsWith(".")) return { name: null, wait: "no theme set" };

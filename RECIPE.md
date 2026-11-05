@@ -21,7 +21,7 @@ Colors come from the `gentle-shell` theme. Shipped values (used until the mod sy
 ## How it behaves
 
 - Every panel except the brand row and the tab bar is a shipped herdr mod (`spaces`, `agents`, `pane`, `files`, `changes`, `workspace-status`), so a mod the person replaces keeps working here.
-- The `gentle-theme` mod reads `theme` from `~/.gentle-shell/agent/settings.json` every 500 ms, finds that Pi theme (custom file, or the built-in `dark` and `light`), derives a herdr theme and rewrites `themes/gentle-shell.json` only when the result changed. The Pi theme file is re-read when the name changes and every 5 seconds.
+- The `gentle-theme` mod reads `theme` from `~/.gentle-shell/agent/settings.json` (or `~/.pi/agent/settings.json` when that file does not exist, as with the Pi extension) every 500 ms, finds that Pi theme (custom file, or the built-in `dark` and `light`), derives a herdr theme and rewrites `themes/gentle-shell.json` only when the result changed. The Pi theme file is re-read when the name changes and every 5 seconds.
 - Built-in `dark` and `light` are embedded in the mod (Pi stores them inside its package, as `okhsl(...)` colors); on a light background the foreground colors flip to dark. The Gentle Shell theme `system` keeps the shipped Gentle palette.
 - The toggle runs `layout.show` or `layout.hide` on the `panel` node, like the Files and Changes buttons, and does not change the per-space memory of which panel is open.
 - Agent statuses (working, blocked, done, idle) use the theme's `working`, `blocked`, `done` and `idle` colors.
@@ -38,7 +38,7 @@ Colors come from the `gentle-shell` theme. Shipped values (used until the mod sy
 
 ## Watch out
 
-- The `gentle-theme` mod **reads files outside its folder** (`~/.gentle-shell/agent/settings.json`, and the Pi theme file under `~/.gentle-shell/agent/themes`, `~/.pi/agent/themes` or `gentle-pi/themes`) and **writes `themes/gentle-shell.json`** in the herdr home. It runs no programs and uses no network.
+- The `gentle-theme` mod **reads files outside its folder** (`~/.gentle-shell/agent/settings.json` or `~/.pi/agent/settings.json`, and the Pi theme file under `~/.gentle-shell/agent/themes`, `~/.pi/agent/themes` or `gentle-pi/themes`) and **writes `themes/gentle-shell.json`** in the herdr home. It runs no programs and uses no network.
 - `gentle-chrome` and `gentle-tabs` are clones, so herdr no longer updates them in this layout. Compare them with `workspace-chrome` and `tabs` after a herdr upgrade.
 - `programs.json` lives in the herdr home and a layout cannot ship it. Add the `gentle-shell` entry to the person's own file (create it if missing). Without it the flower becomes the generic robot again; nothing else breaks.
 - Confirmed on herdr-app 0.1.12 (Windows): the layout loads with no errors, `herdr-app check` passes for the three mods, `home()` resolves the Gentle Shell and Pi paths, herdr applies a rewritten `themes/gentle-shell.json` live, and switching Gentle Shell to `light` and `dark` was reflected in herdr in 374 ms and 218 ms.

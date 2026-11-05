@@ -32,7 +32,7 @@ Read ~/.config/herdr-app/AGENTS.md, then add this layout: <repository URL>
 
 The agent copies `layouts/gentle-herdr.json` to `~/.config/herdr-app/layouts/`, the three folders in `mods/` to `mods/` and `themes/gentle-shell.json` to `themes/`, merges `programs.json` into yours, checks the mods and switches the layout. Your own layout stays; `ctrl-shift-l` switches back.
 
-The `gentle-theme` mod reads `~/.gentle-shell/agent/settings.json` and the Pi theme file, and writes `themes/gentle-shell.json`. It runs no programs and uses no network.
+The `gentle-theme` mod reads `~/.gentle-shell/agent/settings.json` (or `~/.pi/agent/settings.json` when you use the Pi extension) and the Pi theme file, and writes `themes/gentle-shell.json`. It runs no programs and uses no network.
 
 ## Develop
 
